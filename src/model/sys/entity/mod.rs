@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod sys_api_permission;
+pub mod sys_codegen_config;
 pub mod sys_dept;
 pub mod sys_dict_data;
 pub mod sys_dict_type;

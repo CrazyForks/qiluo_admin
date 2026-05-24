@@ -19,3 +19,4 @@ pub mod s_sys_operation_log;
 pub mod s_sys_cache;
 pub mod s_sys_upload;
 pub mod s_sys_user_dept;
+pub mod s_sys_codegen;

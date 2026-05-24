@@ -2,3 +2,5 @@
 
 pub use super::test_api::Entity as TestApi;
 pub use super::test_data_scope::Entity as TestDataScope;
+pub use super::test_article::Entity as TestArticle;
+pub use super::test_category::Entity as TestCategory;

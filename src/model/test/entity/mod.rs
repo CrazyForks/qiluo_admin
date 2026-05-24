@@ -4,3 +4,5 @@ pub mod prelude;
 
 pub mod test_api;
 pub mod test_data_scope;
+pub mod test_article;
+pub mod test_category;

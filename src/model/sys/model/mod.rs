@@ -1,5 +1,6 @@
 pub use super::entity as entity;
 pub use super::args as args;
+pub mod msys_codegen_config;
 pub mod msys_user;
 pub mod msys_menu;
 pub mod msys_user_role;

@@ -1,12 +1,9 @@
-use crate::common::result::ApiResponse;
-use async_trait::async_trait;
+use super::validatedjson::ServerError;
 use axum::{
     extract::{FromRequestParts, Query},
-    http::request::Parts, 
-    response::{IntoResponse, Response},
+    http::request::Parts,
 };
 use serde::de::DeserializeOwned;
-use thiserror::Error;
 use validator::Validate;
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -26,27 +23,4 @@ where
 }
 axum_core::__impl_deref!(VQuery);
 
-#[derive(Debug, Error)]
-pub enum ServerError {
-    #[error(transparent)]
-    ValidationError(#[from] validator::ValidationErrors),
 
-    #[error(transparent)]
-    AxumQueryRejection(#[from] axum::extract::rejection::QueryRejection),
-}
-
-impl IntoResponse for ServerError {
-    fn into_response(self) -> Response {
-        match self {
-            ServerError::ValidationError(e) => {
-                tracing::error!("{:?}", e);
-                ApiResponse::bad_request(e.to_string())
-            }
-            ServerError::AxumQueryRejection(e) => {
-                tracing::error!("{:?}", e);
-                ApiResponse::bad_request(e.to_string())
-            }
-        }
-        .into_response()
-    }
-}

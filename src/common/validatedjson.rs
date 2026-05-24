@@ -1,5 +1,4 @@
 use crate::common::result::ApiResponse;
-use async_trait::async_trait;
 use axum::{
     extract::{FromRequest, Request},
     response::{IntoResponse, Response},
@@ -35,6 +34,12 @@ pub enum ServerError {
 
     #[error(transparent)]
     MissingJsonContentType(#[from] axum::extract::rejection::MissingJsonContentType),
+
+    #[error(transparent)]
+    AxumQueryRejection(#[from] axum::extract::rejection::QueryRejection),
+
+    #[error(transparent)]
+    AxumFormRejection(#[from] axum::extract::rejection::FormRejection),
 }
 
 impl IntoResponse for ServerError {
@@ -49,6 +54,14 @@ impl IntoResponse for ServerError {
                 ApiResponse::bad_request(e.to_string())
             }
             ServerError::MissingJsonContentType(e) => {
+                tracing::error!("{:?}", e);
+                ApiResponse::bad_request(e.to_string())
+            }
+            ServerError::AxumQueryRejection(e) => {
+                tracing::error!("{:?}", e);
+                ApiResponse::bad_request(e.to_string())
+            }
+            ServerError::AxumFormRejection(e) => {
                 tracing::error!("{:?}", e);
                 ApiResponse::bad_request(e.to_string())
             }

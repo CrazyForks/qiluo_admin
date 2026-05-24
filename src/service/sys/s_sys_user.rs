@@ -269,7 +269,7 @@ pub async fn update_avatar(
     userinfo: UserInfo,
     VJson(arg): VJson<UserAvatarEdit>,
 ) -> impl IntoResponse {
-    match s_sys_upload::save_base64_img(&arg.avatar).await {
+    match s_sys_upload::save_base64_img(&arg.avatar,"avatar").await {
         Ok((domain_avatar, avatar)) => {
             let _ = SysUserModel::update_avatar(userinfo.uid, avatar).await;
             ApiResponse::ok(domain_avatar)

@@ -25,7 +25,14 @@ pub fn router_sys() -> WebPath {
             .nest("/dashboard", sys_dashboard())
             .nest("/setting", sys_setting())
             .nest("/operationlog", sys_operation_log())
-            .nest("/cache", sys_cache()),
+            .nest("/cache", sys_cache())
+            .nest("/codegen", sys_codegen())
+            .route(
+                "/upload",
+                WebPathType::Post,
+                Some("上传文件"),
+                post(s_sys_upload::upload_public_file),
+            ),
     )
 }
 
@@ -39,7 +46,7 @@ pub fn white_sys() -> Router {
 }
 
 fn sys_test() -> Router {
-    Router::new().route("/test1", get(s_sys_test::test)) 
+    Router::new().route("/test1", get(s_sys_test::test))
 }
 
 fn auth() -> Router {
@@ -98,7 +105,7 @@ fn menu() -> WebPath {
 }
 
 fn sys_user() -> WebPath {
-    WebPath::new() 
+    WebPath::new()
         .route(
             "/list",
             WebPathType::Get,
@@ -560,5 +567,33 @@ fn sys_cache() -> WebPath {
             WebPathType::Post,
             Some("清空缓存"),
             post(s_sys_cache::clear),
+        )
+}
+
+fn sys_codegen() -> WebPath {
+    WebPath::new()
+        .route(
+            "/scan",
+            WebPathType::Get,
+            Some("扫描所有Entity"),
+            get(s_sys_codegen::scan_entities),
+        )
+        .route(
+            "/generate",
+            WebPathType::Post,
+            Some("生成代码"),
+            post(s_sys_codegen::generate),
+        )
+        .route(
+            "/save_config",
+            WebPathType::Post,
+            Some("保存字段配置"),
+            post(s_sys_codegen::save_config),
+        )
+        .route(
+            "/load_config",
+            WebPathType::Get,
+            Some("加载字段配置"),
+            get(s_sys_codegen::load_config),
         )
 }
