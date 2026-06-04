@@ -1,5 +1,6 @@
 pub mod sys_controll;
 pub mod test;
+pub mod wechat;
 pub mod web_path;
 use crate::worker::invokefunction::{InvokeFunctionMsg, InvokeFunctionWorker};
 use crate::worker::AppWorker;
@@ -13,6 +14,7 @@ impl WebApi {
 
         webpath = webpath.merge(sys_controll::router_sys());
         webpath = webpath.merge(test::router_test());
+        webpath = webpath.merge(wechat::router_wechat());
 
         webpath = webpath.final_to_path();
         let expand_path = webpath.get_last_level_paths();
@@ -38,5 +40,6 @@ impl WebApi {
         Router::new()
             .merge(sys_controll::white_sys())
             .merge(test::white_test())
+            .merge(wechat::white_wechat())
     }
 }

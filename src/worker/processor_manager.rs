@@ -3,7 +3,7 @@ use crate::worker::AppWorker;
 use tracing::trace;
 
 use super::common::Processor;
-use super::{InvokeFunctionWorker, JobWorker, LoginInfoWorker, MailerWorker, RequestUrlWorker};
+use super::{InvokeFunctionWorker, JobWorker, LoginInfoWorker, MailerWorker, RequestUrlWorker, WxImageDownloadWorker};
 
 pub const DEFAULT_QUEUES: &[&str] = &["default", "mailer", "logininfo"];
 
@@ -16,10 +16,7 @@ async fn init_process() -> Processor {
         "registering queues (merged config and default)"
     );
     Processor::new(
-        DEFAULT_QUEUES
-            .iter()
-            .map(ToString::to_string)
-            .collect::<Vec<_>>(),
+        queues,
         num_workers,
     )
 }
@@ -48,7 +45,7 @@ pub async fn processor_job() -> Processor {
     p.register(JobWorker::new());
     p.register(InvokeFunctionWorker::new());
     p.register(RequestUrlWorker::new());
-
+    p.register(WxImageDownloadWorker::new());
     trace!("done registering workers and queues");
     p
 }

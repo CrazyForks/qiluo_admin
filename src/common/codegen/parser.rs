@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info};
 use std::fs;
 use std::path::Path;
+use tracing::debug;
 
 /// 解析后的字段信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -272,7 +272,7 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
     for field in &mut fields {
         if field.is_primary_key {
             field.frontend_component = "Input".to_string();
-            field.show_in_list = true;    
+            field.show_in_list = true;
             field.show_in_search = false;
             field.show_in_form = false;
             field.show_in_detail = true;
@@ -286,23 +286,24 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
             field.show_in_list = true;
             field.show_in_search = field.base_type == "String";
             field.show_in_form = true;
-            field.show_in_detail = true; 
+            field.show_in_detail = true;
             field.frontend_component = infer_frontend_component(&field.base_type, &field.name);
         }
     }
 
     // 解析 Relation 枚举
     let mut relations = parse_relation_enum(content, table_name, module_name);
- 
+
     let mut belongs_to_fields: Vec<FieldInfo> = Vec::new();
     for field in &mut fields {
-        if field.name.ends_with("_id") && !field.is_primary_key { 
+        if field.name.ends_with("_id") && !field.is_primary_key {
             let has_existing = relations.iter().any(|r| {
-                matches!(r.kind, RelationKind::BelongsTo) && r.fk_field.as_deref() == Some(&field.name)
+                matches!(r.kind, RelationKind::BelongsTo)
+                    && r.fk_field.as_deref() == Some(&field.name)
             });
-            if !has_existing { 
+            if !has_existing {
                 let target_name = field.name.strip_suffix("_id").unwrap_or(&field.name);
-                let target_entity = target_name;  
+                let target_entity = target_name;
                 let target_model = pascal_case(target_name);
                 let display_field = infer_display_field(target_name);
                 relations.push(RelationInfo {
@@ -318,7 +319,8 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
             }
             // 把关系信息挂到字段上
             if let Some(rel) = relations.iter().find(|r| {
-                matches!(r.kind, RelationKind::BelongsTo) && r.fk_field.as_deref() == Some(&field.name)
+                matches!(r.kind, RelationKind::BelongsTo)
+                    && r.fk_field.as_deref() == Some(&field.name)
             }) {
                 field.relation = Some(rel.clone());
                 field.frontend_component = "Select".to_string();
@@ -352,17 +354,9 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
         .cloned()
         .collect();
 
-    let list_fields: Vec<FieldInfo> = fields
-        .iter()
-        .filter(|f| f.show_in_list)
-        .cloned()
-        .collect();
+    let list_fields: Vec<FieldInfo> = fields.iter().filter(|f| f.show_in_list).cloned().collect();
 
-    let form_fields: Vec<FieldInfo> = fields
-        .iter()
-        .filter(|f| f.show_in_form)
-        .cloned()
-        .collect();
+    let form_fields: Vec<FieldInfo> = fields.iter().filter(|f| f.show_in_form).cloned().collect();
 
     let detail_fields: Vec<FieldInfo> = fields
         .iter()
@@ -371,14 +365,15 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
         .collect();
 
     let has_updated_at = fields.iter().any(|f| f.name == "updated_at");
-    let is_updated_at_optional = fields.iter()
+    let is_updated_at_optional = fields
+        .iter()
         .find(|f| f.name == "updated_at")
         .map(|f| f.is_optional)
         .unwrap_or(false);
 
     // 检测是否包含数据隔离字段（dept_id + owner_id）
-    let has_data_scope = fields.iter().any(|f| f.name == "dept_id")
-        && fields.iter().any(|f| f.name == "owner_id");
+    let has_data_scope =
+        fields.iter().any(|f| f.name == "dept_id") && fields.iter().any(|f| f.name == "owner_id");
 
     EntityInfo {
         table_name: table_name.to_string(),
@@ -402,8 +397,11 @@ pub fn parse_entity_content(content: &str, table_name: &str, module_name: &str) 
 /// 将用户的字段配置应用到 EntityInfo，覆盖默认推断
 pub fn apply_field_config(entity: &mut EntityInfo, configs: &[FieldConfig]) {
     for config in configs {
-        if let Some(field) = entity.fields.iter_mut().find(|f| f.name == config.field_name) {
-             
+        if let Some(field) = entity
+            .fields
+            .iter_mut()
+            .find(|f| f.name == config.field_name)
+        {
             field.show_in_list = config.show_in_list;
             field.show_in_search = config.show_in_search;
             field.show_in_form = config.show_in_form;
@@ -420,23 +418,44 @@ pub fn apply_field_config(entity: &mut EntityInfo, configs: &[FieldConfig]) {
             }
             if let Some(ref label) = config.label {
                 field.label = Some(label.clone());
-            }          
+            }
         } else {
-            debug!("[DEBUG apply_field_config] WARNING: field '{}' not found in entity!", config.field_name);
+            debug!(
+                "[DEBUG apply_field_config] WARNING: field '{}' not found in entity!",
+                config.field_name
+            );
         }
     }
     // 重新根据 show_in_* 标记计算分类字段列表
-    entity.searchable_fields = entity.fields.iter().filter(|f| f.show_in_search).cloned().collect();
-    entity.list_fields = entity.fields.iter().filter(|f| f.show_in_list).cloned().collect();
-    entity.form_fields = entity.fields.iter().filter(|f| f.show_in_form).cloned().collect();
-    entity.detail_fields = entity.fields.iter().filter(|f| f.show_in_detail).cloned().collect();
+    entity.searchable_fields = entity
+        .fields
+        .iter()
+        .filter(|f| f.show_in_search)
+        .cloned()
+        .collect();
+    entity.list_fields = entity
+        .fields
+        .iter()
+        .filter(|f| f.show_in_list)
+        .cloned()
+        .collect();
+    entity.form_fields = entity
+        .fields
+        .iter()
+        .filter(|f| f.show_in_form)
+        .cloned()
+        .collect();
+    entity.detail_fields = entity
+        .fields
+        .iter()
+        .filter(|f| f.show_in_detail)
+        .cloned()
+        .collect();
 }
 
 /// 扫描指定模块目录下的所有 Entity 文件（递归遍历子目录）
 pub fn scan_entities(model_base_path: &str, module_name: &str) -> Vec<EntityInfo> {
-    let entity_dir = Path::new(model_base_path)
-        .join(module_name)
-        .join("entity");
+    let entity_dir = Path::new(model_base_path).join(module_name).join("entity");
 
     let mut entities = Vec::new();
     scan_entity_dir_recursive(&entity_dir, module_name, &mut entities);
@@ -551,7 +570,13 @@ fn parse_single_relation(attr: &str, module_name: &str) -> Option<RelationInfo> 
     let attr_str = attr_owned.as_str();
 
     // 提取 variant name — 在 ] 后的下一行
-    let variant = attr_str.split(']').next_back()?.trim().trim_end_matches(',').trim().to_string();
+    let variant = attr_str
+        .split(']')
+        .next_back()?
+        .trim()
+        .trim_end_matches(',')
+        .trim()
+        .to_string();
 
     if attr_str.contains("belongs_to") {
         // 提取目标 entity
@@ -565,15 +590,15 @@ fn parse_single_relation(attr: &str, module_name: &str) -> Option<RelationInfo> 
 
         // 提取 from 字段
         let from = extract_quoted_value(attr_str, "from = ");
-        let fk_field = from.as_ref().and_then(|f| {
-            f.strip_prefix("Column::")
-                .map(to_snake_case)
-        });
+        let fk_field = from
+            .as_ref()
+            .and_then(|f| f.strip_prefix("Column::").map(to_snake_case));
 
         // 提取 to 字段（目标主键）
         let to = extract_quoted_value(attr_str, "to = ");
         let _target_pk = to.as_ref().and_then(|t| {
-            let column_name = t.strip_prefix("super::")
+            let column_name = t
+                .strip_prefix("super::")
                 .and_then(|s| {
                     // super::entity::Column::Field → Column::Field
                     s.split("Column::").nth(1)
@@ -714,7 +739,8 @@ fn parse_field_line(line: &str) -> Option<FieldInfo> {
         type_str.clone()
     };
 
-    let is_datetime = base_type == "DateTime" || base_type == "DateTimeUtc" || base_type == "NaiveDateTime";
+    let is_datetime =
+        base_type == "DateTime" || base_type == "DateTimeUtc" || base_type == "NaiveDateTime";
     let is_id_field = base_type == "i64";
 
     // 推断前端组件类型
@@ -765,7 +791,15 @@ fn infer_frontend_component(base_type: &str, name: &str) -> String {
         return "DatePicker".to_string();
     }
     // 字段名包含图片相关关键字时返回 Upload 组件
-    let image_keywords = ["image", "img", "avatar", "cover", "pic", "photo", "thumbnail"];
+    let image_keywords = [
+        "image",
+        "img",
+        "avatar",
+        "cover",
+        "pic",
+        "photo",
+        "thumbnail",
+    ];
     if image_keywords.iter().any(|kw| name.contains(kw)) {
         return "Upload".to_string();
     }
@@ -779,10 +813,13 @@ fn infer_frontend_component(base_type: &str, name: &str) -> String {
     }
     // 常见枚举/字典字段 → Select
     let enum_names = [
-        "status", "type", "type_", "kind", "category", "level",
-        "state", "mode", "priority", "severity", "grade", "class",
+        "status", "type", "type_", "kind", "category", "level", "state", "mode", "priority",
+        "severity", "grade", "class",
     ];
-    if enum_names.iter().any(|kw| name == *kw || name.ends_with(kw)) {
+    if enum_names
+        .iter()
+        .any(|kw| name == *kw || name.ends_with(kw))
+    {
         return "Select".to_string();
     }
     // 性别 → Radio
@@ -790,25 +827,33 @@ fn infer_frontend_component(base_type: &str, name: &str) -> String {
         return "Radio".to_string();
     }
     // 排序/权重 → InputNumber
-    if name == "sort" || name == "sort_order" || name == "order_num" || name == "weight" || name == "priority" {
+    if name == "sort"
+        || name == "sort_order"
+        || name == "order_num"
+        || name == "weight"
+        || name == "priority"
+    {
         return "InputNumber".to_string();
     }
     match base_type {
         "i32" | "u32" => "InputNumber".to_string(),
-        "i64" | "u64" => "Input".to_string(), 
+        "i64" | "u64" => "Input".to_string(),
         "f32" | "f64" => "InputNumber".to_string(),
         "bool" => "Switch".to_string(),
         "String" => {
-            if name.contains("remark") || name.contains("content") || name.contains("description") {
-                "InputTextarea".to_string()
+            let comp = if ["remark", "content", "description"]
+                .iter()
+                .any(|k| name.contains(k))
+            {
+                "InputTextarea"
             } else {
-                "Input".to_string()
+                "Input"
             }
+            .to_string();
+            comp
         }
         "DateTime" | "NaiveDateTime" | "DateTimeUtc" => "DatePicker".to_string(),
-        _ => {
-            "Input".to_string()
-        }
+        _ => "Input".to_string(),
     }
 }
 
@@ -924,7 +969,10 @@ impl ActiveModelBehavior for ActiveModel {}
 
         // 验证字段数量 (id 只出现一次，已去重)
         assert_eq!(entity.fields.len(), 6);
-        tracing::info!("fields: {:?}", entity.fields.iter().map(|f| &f.name).collect::<Vec<_>>());
+        tracing::info!(
+            "fields: {:?}",
+            entity.fields.iter().map(|f| &f.name).collect::<Vec<_>>()
+        );
 
         // 验证 id 字段
         let id_field = entity.fields.iter().find(|f| f.name == "id").unwrap();
@@ -932,13 +980,21 @@ impl ActiveModelBehavior for ActiveModel {}
         assert!(id_field.is_id_field);
 
         // 验证 category_id 字段 → 应有 Relation
-        let cat_field = entity.fields.iter().find(|f| f.name == "category_id").unwrap();
+        let cat_field = entity
+            .fields
+            .iter()
+            .find(|f| f.name == "category_id")
+            .unwrap();
         assert!(cat_field.relation.is_some(), "category_id 应该有关联关系");
         let rel = cat_field.relation.as_ref().unwrap();
         assert!(matches!(rel.kind, RelationKind::BelongsTo));
         assert_eq!(rel.target_entity, "test_category");
         assert_eq!(rel.target_model, "TestCategory");
-        assert_eq!(rel.fk_field.as_deref(), Some("category_id"), "fk_field 应该是 category_id");
+        assert_eq!(
+            rel.fk_field.as_deref(),
+            Some("category_id"),
+            "fk_field 应该是 category_id"
+        );
 
         // 验证 belongs_to_fields
         assert_eq!(entity.belongs_to_fields.len(), 1);

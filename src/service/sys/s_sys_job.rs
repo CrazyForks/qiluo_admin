@@ -96,8 +96,7 @@ pub async fn worker_execute_job(job: JobRes) {
         let cron_expression = job.cron_expression;
         if let Some(job_params) = job.job_params {
             let value_result: Result<Value> = serde_json::from_str(job_params.as_str());
-            if value_result.is_ok() {
-                let v = value_result.unwrap();
+            if let Ok(v) = value_result {
                 let invokemsg = InvokeFunctionMsg {
                     job_id: Some(job.job_id),
                     callfun: v["callfun"].as_str().unwrap_or_default().to_string(),
@@ -131,8 +130,7 @@ pub async fn execute_job(job: JobRes) {
         if let Some(job_params) = job.job_params {
             let value_result: Result<Value> = serde_json::from_str(job_params.as_str());
 
-            if value_result.is_ok() {
-                let v = value_result.unwrap();
+            if let Ok(v) = value_result {
                 let invokemsg = InvokeFunctionMsg {
                     job_id: Some(job.job_id),
                     callfun: v["callfun"].as_str().unwrap_or_default().to_string(),

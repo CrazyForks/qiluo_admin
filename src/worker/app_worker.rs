@@ -1,5 +1,6 @@
 use crate::common::error::Result;
 use async_trait::async_trait;
+use tracing::error;
 
 use super::common::Worker;
 
@@ -18,7 +19,15 @@ where
     }
     // 异步加入队列
     async fn enqueue_async(args: T) -> Result<()> {
-        tokio::spawn(async move { Self::perform_async(args).await });
+        let handle = tokio::spawn(async move { Self::perform_async(args).await });
+        // 监控入队结果，避免静默吞掉错误
+        tokio::spawn(async move {
+            match handle.await {
+                Ok(Ok(())) => {}
+                Ok(Err(e)) => error!("enqueue_async failed for {}: {:?}", Self::class_name(), e),
+                Err(e) => error!("enqueue_async task panicked for {}: {:?}", Self::class_name(), e),
+            }
+        });
         Ok(())
     }
     //异步执行

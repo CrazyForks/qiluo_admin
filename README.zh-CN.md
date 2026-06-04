@@ -1,4 +1,4 @@
-# 祺洛 (QiLuo) - Rust 快速开发平台
+# 祺洛 (QiLuo) - Rust 后台管理系统 & 快速开发平台
 <a href="https://www.qiluo.vip/" target="_blank">
   <img src="https://www.qiluo.vip/logo.png" alt="QiLuo" width="150" style="height: auto;">
 </a>
@@ -22,7 +22,7 @@
 
 ## 📖 项目概述
 
-祺洛是一个基于 Rust 技术栈开发的企业级快速开发平台，采用现代化的架构设计，提供完整的后台管理系统解决方案。平台集成了用户管理、权限控制、系统监控、微信公众号管理等核心功能，适用于中小型企业的信息化建设。
+祺洛是一个基于 Rust 技术栈开发的企业级**后台管理系统**和**快速开发平台**，采用 Axum + Sea-ORM + Vue 3 现代化架构设计。平台提供完整的**后台管理面板**和 **CMS** 解决方案，集成 RBAC 权限控制、多租户、读写分离、定时任务、微信公众号管理和系统监控等核心功能，适用于构建安全、高性能的**企业级后台系统**和 **SaaS 平台**。
 
 ## ✨ 核心特性
 
@@ -408,3 +408,11 @@ qiluo_vue/
 - 同时衷心感谢每一位 **点过 Star、提交 Issue 或参与功能投票** 的朋友——正是你们的关注与参与，让这个项目持续前行！
 
 每一份帮助我们都铭记于心！
+
+---
+
+## 🔖 关键词
+
+<!-- GitHub 搜索引擎会索引 README 文本，以下关键词有助于用户发现本项目 -->
+
+`rust` `axum` `后台管理` `admin-dashboard` `admin-panel` `后台管理系统` `vue3` `sea-orm` `rbac` `权限管理` `cms` `内容管理系统` `jwt` `redis` `mysql` `sqlite` `tokio` `element-plus` `rust-lang` `admin-template` `saas` `多租户` `读写分离` `定时任务` `微信公众号` `dashboard` `web-framework` `orm` `async`

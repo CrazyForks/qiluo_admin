@@ -27,6 +27,7 @@ pub fn router_sys() -> WebPath {
             .nest("/operationlog", sys_operation_log())
             .nest("/cache", sys_cache())
             .nest("/codegen", sys_codegen())
+            .nest("/mailer", sys_mailer())
             .route(
                 "/upload",
                 WebPathType::Post,
@@ -595,5 +596,62 @@ fn sys_codegen() -> WebPath {
             WebPathType::Get,
             Some("加载字段配置"),
             get(s_sys_codegen::load_config),
+        )
+}
+
+fn sys_mailer() -> WebPath {
+    WebPath::new()
+        .route(
+            "/send",
+            WebPathType::Post,
+            Some("发送邮件"),
+            post(s_sys_mailer::send_email),
+        )
+        .route(
+            "/send_template",
+            WebPathType::Post,
+            Some("发送模板邮件"),
+            post(s_sys_mailer::send_template_email),
+        )
+        .route(
+            "/config",
+            WebPathType::Get,
+            Some("获取邮件配置"),
+            get(s_sys_mailer::get_mailer_config),
+        )
+        .route(
+            "/log_list",
+            WebPathType::Get,
+            Some("获取邮件日志列表"),
+            get(s_sys_mailer::get_mail_log_list),
+        )
+        .nest("/template", sys_mail_template())
+}
+
+fn sys_mail_template() -> WebPath {
+    WebPath::new()
+        .route(
+            "/list",
+            WebPathType::Get,
+            Some("获取邮件模板列表"),
+            get(s_sys_mailer::get_mail_template_list),
+        )
+        .route(
+            "/add",
+            WebPathType::Post,
+            Some("新增邮件模板"),
+            post(s_sys_mailer::add_mail_template),
+        )
+        .route(
+            "/edit",
+            WebPathType::Put,
+            Some("编辑邮件模板"),
+            put(s_sys_mailer::edit_mail_template),
+        )
+        .route(
+            "/del",
+            WebPathType::Delete,
+            Some("删除邮件模板"),
+            delete(s_sys_mailer::delete_mail_template),
         )
 }

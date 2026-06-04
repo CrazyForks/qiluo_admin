@@ -3,6 +3,8 @@ pub mod acache;
 pub mod acaptch;
 pub mod asys_codegen_config;
 pub mod asys_user;
+pub mod asys_mail_log;
+pub mod asys_mail_template;
 pub mod asys_menu;
 pub mod asys_dept;
 pub mod asys_role;

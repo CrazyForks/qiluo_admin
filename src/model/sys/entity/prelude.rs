@@ -8,6 +8,7 @@ pub use super::sys_dict_type::Entity as SysDictType;
 pub use super::sys_job::Entity as SysJob;
 pub use super::sys_job_log::Entity as SysJobLog;
 pub use super::sys_login_info::Entity as SysLoginInfo;
+pub use super::sys_mail_log::Entity as SysMailLog;
 pub use super::sys_menu::Entity as SysMenu;
 pub use super::sys_notice::Entity as SysNotice;
 pub use super::sys_oper_log::Entity as SysOperLog;

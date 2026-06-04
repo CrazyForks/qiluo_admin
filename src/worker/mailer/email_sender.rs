@@ -1,7 +1,9 @@
-use super::{Email, DEFAULT_FROM_SENDER};
+use super::Email;
 use crate::common::error::{Error, Result};
 use lettre::{
-    AsyncTransport, Message, Tokio1Executor, Transport, message::{MultiPart, SinglePart}, transport::smtp::authentication::Credentials
+    AsyncTransport, Message, Tokio1Executor, Transport,
+    message::{Mailbox, MultiPart, SinglePart},
+    transport::smtp::authentication::Credentials,
 };
 use tracing::info;
 
@@ -16,9 +18,29 @@ pub enum EmailTransport {
 #[derive(Clone)]
 pub struct EmailSender {
     pub transport: EmailTransport,
+    /// Default from sender from config
+    pub default_from: Option<String>,
+    /// Authenticated SMTP user (the actual sender address)
+    pub auth_user: Option<String>,
 }
 
 impl EmailSender {
+    pub fn stub() -> Self {
+        Self {
+            transport: EmailTransport::Test(lettre::transport::stub::StubTransport::new_ok()),
+            default_from: None,
+            auth_user: None,
+        }
+    }
+
+    pub fn stub_with_from(default_from: Option<String>, auth_user: Option<String>) -> Self {
+        Self {
+            transport: EmailTransport::Test(lettre::transport::stub::StubTransport::new_ok()),
+            default_from,
+            auth_user,
+        }
+    }
+
     pub fn smtp(config: &crate::config::appconfig::SmtpMailer) -> Result<Self> {
         let mut email_builder = if config.secure {
             lettre::AsyncSmtpTransport::<Tokio1Executor>::relay(&config.host)
@@ -39,6 +61,8 @@ impl EmailSender {
 
         Ok(Self {
             transport: EmailTransport::Smtp(email_builder.build()),
+            default_from: config.from.clone(),
+            auth_user: config.auth.as_ref().map(|a| a.user.clone()),
         })
     }
 
@@ -50,14 +74,43 @@ impl EmailSender {
             // 同时提供纯文本 + HTML
             MultiPart::alternative_plain_html(email.text.clone(), email.html.clone())
         };
+
+        let from_input = email
+            .from
+            .clone()
+            .or_else(|| self.default_from.clone())
+            .ok_or_else(|| Error::Message("no from sender configured".to_string()))?;
+
+        // Try to parse as full "Name <email>" format first.
+        // If parsing fails, treat it as a display name only and pair with the auth user email.
+        let from_mailbox = match from_input.parse::<Mailbox>() {
+            Ok(mb) => mb,
+            Err(_) => {
+                // User typed a display name like "祺洛科技", not a full address
+                let auth_email = self.auth_user.as_deref().ok_or_else(|| {
+                    Error::Message("发件人仅填了显示名，但未配置SMTP认证邮箱".to_string())
+                })?;
+                Mailbox::new(
+                    Some(from_input.parse().unwrap()),
+                    auth_email.parse().unwrap(),
+                )
+            }
+        };
+
+        // Force the email address to match the authenticated SMTP user,
+        // because most SMTP servers (163, QQ, Gmail) reject sending from a different address.
+        let from_mailbox = if let Some(ref auth_email) = self.auth_user {
+            if from_mailbox.email.to_string() != *auth_email {
+                Mailbox::new(from_mailbox.name.clone(), auth_email.parse().unwrap())
+            } else {
+                from_mailbox
+            }
+        } else {
+            from_mailbox
+        };
+
         let mut builder = Message::builder()
-            .from(
-                email
-                    .from
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_FROM_SENDER.to_string())
-                    .parse()?,
-            )
+            .from(from_mailbox)
             .to(email.to.parse()?);
 
         if let Some(reply_to) = &email.reply_to {
@@ -74,17 +127,24 @@ impl EmailSender {
 
         match &self.transport {
             EmailTransport::Smtp(xp) => {
-                // xp.send(msg).await?;
                 match xp.send(msg).await {
-                    Ok(_) => info!("Email sent successfully!"),
-                    Err(e) => info!("Could not send email: {e:?}"),
+                    Ok(_) => {
+                        info!("Email sent successfully!");
+                        Ok("sc".to_owned())
+                    }
+                    Err(e) => {
+                        tracing::error!(err.msg = %e, err.detail = ?e, "smtp_send_error");
+                        Err(Error::Message(format!("邮件发送失败: {}", e)))
+                    }
                 }
             }
             EmailTransport::Test(xp) => {
-                xp.send(&msg)
-                    .map_err(|_| Error::Message("sending email error".into()))?;
+                xp.send(&msg).map_err(|e| {
+                    tracing::error!(err.msg = %e, err.detail = ?e, "test_send_error");
+                    Error::Message(format!("邮件发送失败: {}", e))
+                })?;
+                Ok("sc".to_owned())
             }
-        };
-        Ok("sc".to_owned())
+        }
     }
 }

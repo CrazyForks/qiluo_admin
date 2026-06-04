@@ -1,6 +1,6 @@
 [package]
 name = "qiluo"
-version = "0.1.0"
+version = "1.1.0"
 edition = "2021"
 
 [dependencies]
@@ -46,7 +46,7 @@ thiserror = "2.0.18"
 http-body = "1.0.1"
 captcha_rust = "0.1.3"
 indexmap = "2.14.0"
-reqwest ={ version = "0.13.2", features = ["json"] }
+reqwest ={ version = "0.13.2", features = ["json", "multipart"] }
 sysinfo = "0.38.4"
 user-agent-parser = "0.3.6"
 lettre =  { version ="0.11.21", default-features = false, features = [
@@ -78,7 +78,10 @@ async_static = "0.1.3"
 byte-unit = "5.2.0"
 base64 = "0.22.1" 
 sha1 = "0.11.0"
-serde-xml-rs = "0.8.2"  
+serde-xml-rs = "0.8.2"
+md-5 = "0.10.6"
+aes = "0.8.4"
+cbc = "0.1.2"
 dashmap = "6.1.0" 
 bb8-redis = "0.26.0"
 tokio-rustls = "0.26.4"

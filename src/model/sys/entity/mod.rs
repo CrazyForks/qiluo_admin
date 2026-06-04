@@ -11,6 +11,8 @@ pub mod sys_job;
 pub mod sys_job_log;
 pub mod sys_login_info;
 pub mod sys_menu;
+pub mod sys_mail_log;
+pub mod sys_mail_template;
 pub mod sys_notice;
 pub mod sys_oper_log;
 pub mod sys_post;

@@ -453,6 +453,8 @@ pub struct SmtpMailer {
     pub secure: bool,
     /// Auth SMTP server
     pub auth: Option<MailerAuth>,
+    /// Default from sender, e.g. "MyApp <noreply@example.com>"
+    pub from: Option<String>,
 }
 
 /// Authentication details for the mailer

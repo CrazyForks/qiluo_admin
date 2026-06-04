@@ -1,6 +1,7 @@
 pub use super::args::asys_role_api::*;
 pub use super::entity::sys_role_api::{self, ActiveModel, Model as SysRoleApiModel};
 use super::msys_api_permission::SysApiPermissionModel;
+use super::entity::sys_api_permission;
 use crate::model::prelude::*;
 
 impl SysRoleApiModel {
@@ -89,15 +90,16 @@ impl SysRoleApiModel {
     //获取角色权限
     pub async fn role_permission_list(role_id: i64) -> Result<Vec<String>> {
         let db = DB().await;
-        let mut rmodel = sys_role_api::Entity::find();
-        if !APPCOFIG.system.super_role.contains(&role_id) {
+        let permissions = if APPCOFIG.system.super_role.contains(&role_id) {
+            // 超级管理员：返回所有已注册的API权限
+            let list = sys_api_permission::Entity::find().all(db).await?;
+            list.iter().map(|x| x.api.to_string()).collect::<Vec<String>>()
+        } else {
+            let mut rmodel = sys_role_api::Entity::find();
             rmodel = rmodel.filter(sys_role_api::Column::RoleId.eq(role_id));
-        }
-        let list = rmodel.all(db).await?;
-        let permissions = list
-            .iter()
-            .map(|x| x.api.to_string())
-            .collect::<Vec<String>>();
+            let list = rmodel.all(db).await?;
+            list.iter().map(|x| x.api.to_string()).collect::<Vec<String>>()
+        };
         Ok(permissions)
     }
 

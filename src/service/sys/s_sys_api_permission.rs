@@ -19,6 +19,7 @@ pub async fn edit(VJson(arg): VJson<ApiPermissionEdit>) -> impl IntoResponse {
 pub async fn update_all_api(webstr: String) -> Result<String> {
     info!("update_all_api begin");
     let args: Vec<WebPath> = serde_json::from_str(&webstr).unwrap();
+    info!("update_all_api count: {}", args.len());
     let db = DB().await.begin().await?;
 
     for (sort, webpath) in args.into_iter().enumerate() {

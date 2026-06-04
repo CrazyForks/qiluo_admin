@@ -44,15 +44,20 @@ impl UnitOfWork {
                 .set_nx_ex(&redis_key, "", duration.as_secs() as usize)
                 .await?
             {
+                tracing::warn!("Job unique_for dedup skipped: class={}", &job.class);
                 return Ok(());
             }
         }
 
         cache.sadd("queues", &[job.queue.as_str()]).await?;
 
+        let queue_key = &self.queue;
+        let job_json = serde_json::to_string(&job)?;
+        tracing::info!("Enqueuing job: class={}, queue={}, jid={}", &job.class, queue_key, &job.jid);
         cache
-            .lpush(&self.queue, serde_json::to_string(&job)?)
+            .lpush(queue_key, &job_json)
             .await?;
+        tracing::info!("Job enqueued successfully: class={}, queue={}", &job.class, queue_key);
         Ok(())
     }
 

@@ -42,6 +42,7 @@ impl Processor {
         let response: Option<(String, String)> = cache.brpop(self.queues.clone(), 2).await?;
 
         if let Some((queue, job_raw)) = response {
+            debug!("Got job from queue {}: {}", queue, &job_raw[..job_raw.len().min(200)]);
             let job: Job = serde_json::from_str(&job_raw)?;
             return Ok(Some(UnitOfWork { queue, job }));
         }

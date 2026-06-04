@@ -610,7 +610,7 @@ const search{targetModel} = async (query: string) => {{
 
     // form_rules: 独立验证规则对象
     let form_rules_entries: Vec<String> = entity.form_fields.iter()
-        .filter_map(|f| build_field_rules_entry(f, &field_validation_map))
+        .filter_map(|f| build_field_rules_entry(f, field_validation_map))
         .collect();
     let form_rules_text = if form_rules_entries.is_empty() {
         String::new()

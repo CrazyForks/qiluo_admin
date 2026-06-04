@@ -8,7 +8,6 @@ use crate::worker::common::{Worker, WorkerOpts};
 use crate::worker::AppWorker;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 #[derive(Deserialize, Serialize, Clone, Default, Debug)]
 pub struct InvokeFunctionMsg {
     pub job_id: Option<i64>,
@@ -31,7 +30,6 @@ impl Worker<InvokeFunctionMsg> for InvokeFunctionWorker {
     }
 
     async fn perform(&self, arg: InvokeFunctionMsg) -> Result<()> {
-        info!("InvokeFunctionWorker perform: {:?}", arg);
         let message = match arg.callfun.as_str() {
             "updateapi" => s_sys_api_permission::update_all_api(arg.parmets).await,
             "clearuserinfo" => s_sys_white_jwt::clear_user_info().await,

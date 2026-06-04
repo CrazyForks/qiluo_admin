@@ -1,9 +1,10 @@
-# QiLuo - Rust Rapid Development Platform
+# QiLuo - Rust Admin Dashboard & Backend Management Platform
+
 <a href="https://www.qiluo.vip/" target="_blank">
   <img src="https://www.qiluo.vip/logo.png" alt="QiLuo" width="150" style="height: auto;">
 </a>
 
-**High Performance · Secure and Reliable · Enterprise-grade Application Development Framework**
+**High Performance · Secure and Reliable · Enterprise-grade Rust Admin Panel & CMS Framework**
 
 <div style="display: flex; flex-wrap: wrap; gap: 5px;">
 <img src="https://gitcode.com/will_csdn_go/qiluo_admin/star/2025top.svg?style=flat-square&logoSize=14"
@@ -22,7 +23,7 @@
 
 ## 📖 Project Overview
 
-QiLuo is an enterprise-grade rapid development platform built on the Rust technology stack. It adopts modern architectural design and provides a complete backend management system solution. The platform integrates core functions such as user management, permission control, system monitoring, and WeChat official account management, suitable for information construction of small and medium-sized enterprises.
+QiLuo is an enterprise-grade **Rust admin dashboard** and **backend management platform** built with Axum, Sea-ORM, and Vue 3. It provides a complete **admin panel** and **CMS** solution with RBAC permission control, multi-tenancy, read-write splitting, scheduled tasks, WeChat integration, and system monitoring — ideal for building secure, high-performance **backend admin systems** and **SaaS platforms**.
 
 ## ✨ Core Features
 
@@ -411,3 +412,11 @@ The growth of this project wouldn't be possible without support from our communi
 - And a big thank you to **everyone** who has starred the repo, opened issues, or voted on features—your engagement keeps this project alive!
 
 We truly appreciate every bit of your support!
+
+---
+
+## 🔖 Keywords
+
+<!-- GitHub search indexes README text. These keywords help users discover this project. -->
+
+`rust` `axum` `admin-dashboard` `admin-panel` `backend-management` `vue3` `sea-orm` `rbac` `cms` `content-management-system` `jwt` `redis` `mysql` `sqlite` `tokio` `element-plus` `rust-lang` `admin-template` `saas` `multi-tenant` `read-write-splitting` `scheduled-tasks` `wechat` `dashboard` `web-framework` `orm` `async`

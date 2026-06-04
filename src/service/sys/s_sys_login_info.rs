@@ -70,8 +70,7 @@ pub mod login_info_function {
         let resp = resp.text_with_charset("utf-8").await;
         if resp.is_ok() {
             let res = serde_json::from_str::<HashMap<String, String>>(resp.unwrap().as_str());
-            if res.is_ok() {
-                let res = res.unwrap();
+            if let Ok(res) = res { 
                 cliinfo.ip = res["ip"].to_string();
                 cliinfo.location = format!("{}{}", res["pro"], res["city"]);
                 cliinfo.net_work = res["addr"].split(' ').collect::<Vec<&str>>()[1].to_string();

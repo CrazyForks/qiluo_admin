@@ -114,7 +114,7 @@ pub async fn delete_public_file(url: &str) {
     let server_config = APPCOFIG.server.clone();
     // 把 URL 中的域名替换为本地 static_dir，还原出真实路径
     let path = url.replace(&server_config.domainname, &server_config.static_dir);
-    if let Err(_) = fs::remove_file(&path).await {
+    if fs::remove_file(&path).await.is_err() {
         tracing::error!("Public file deletion failed: {}", path);
     }
 }

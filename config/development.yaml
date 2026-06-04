@@ -58,9 +58,10 @@ server:
 
 # Worker Configuration
 workers:
-  qeueu:
+  queues:
     - default
-  num_workers: 1 
+    - mailer
+  num_workers: 2
 
 # Database Configuration
 databases:
@@ -70,7 +71,7 @@ databases:
     min_connections: 2
     connect_timeout: 3000
     idle_timeout: 300000
-    enable_logging: true
+    enable_logging: false
 
   - name: replica1
     uri: "mysql://qiluo:Qiluo123@127.0.0.1:3306/qiluoopen"
@@ -78,7 +79,7 @@ databases:
     min_connections: 1
     connect_timeout: 3000
     idle_timeout: 300000
-    enable_logging: true
+    enable_logging: false
 
   - name: replica2
     uri: "mysql://qiluo:Qiluo123@127.0.0.1:3306/qiluoopen"
@@ -86,27 +87,27 @@ databases:
     min_connections: 1
     connect_timeout: 3000
     idle_timeout: 300000
-    enable_logging: true
+    enable_logging: false
 db_routing:
-  default: "primary"         # 不配则用第一个
-  write:   "primary"         # 不配则用 default
+  default: "primary"         # Defaults to the first one if not configured
+  write:   "primary"         # Defaults to 'default' if not configured
   reads:   ["replica1", "replica2"]
 
-  # 读库选择策略：round_robin | random | weighted
+  # Read replica selection strategy: round_robin | random | weighted
   read_strategy: "weighted"
 
-  # 权重（仅对 weighted 生效；未配置的读库默认权重 1）
+  # Weights (only applies to weighted strategy; unconfigured read replicas default to weight 1)
   read_weights:
     replica1: 3
     replica2: 1
 
-  # 出错重试次数（总尝试次数 = 可用读库数 + fallback_to_write(1/0) + retry_attempts）
+  # Retry attempts on error (total attempts = available read replicas + fallback_to_write(1/0) + retry_attempts)
   retry_attempts: 2
 
-  # 单个读库失败后熔断时间（毫秒），期间不再被选中
+  # Circuit breaker duration for a failed read replica (milliseconds); won't be selected during this period
   circuit_break_ms: 30000
 
-  # 没有健康读库时是否回退到写库
+  # Whether to fall back to the write database when no healthy read replicas are available
   fallback_to_write: true
 
 # Application logging configuration
@@ -135,10 +136,12 @@ cache:
   url: {{ get_env(name="REDIS_URL", default="redis://127.0.0.1") }}
 # Mailer Configuration.
 mailer:
+  # Test mode: when enabled, emails will not be actually sent, only logged
+  stub: false
   # SMTP mailer configuration.
   smtp:
     # Enable/Disable smtp mailer.
-    enable: false
+    enable: true
     # SMTP server host. e.x localhost, smtp.gmail.com
     host: smtp.163.com
     # SMTP server port
@@ -146,8 +149,10 @@ mailer:
     # Use secure connection (SSL/TLS).
     secure: true
     auth:
-      user: xxx@163.com
-      password: xxx
+      user: xx@163.com
+      password: xxxxxx
+    # Default from sender
+    from: "Rust祺洛系统 <xx@163.com>"
 
 # Authentication Configuration
 auth:
@@ -160,12 +165,12 @@ auth:
 
 # genid
 snowgenera:
-  # 机器ID
+  # Machine ID
   machine_id: 1001
-  # 机器节点
+  # Machine node
   node_id: 1
 
 system:
-  # 超级管理员角色ID列表
+  # Super admin role ID list
   super_role:
     - 1
