@@ -36,7 +36,7 @@ pub async fn hand_execute_job(VJson(arg): VJson<JobExecute>) -> impl IntoRespons
         execute_job(job).await;
         ApiResponse::ok("Success")
     } else {
-        ApiResponse::ok("Falied")
+        ApiResponse::ok("Failed")
     }
 }
 
